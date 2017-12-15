@@ -304,7 +304,7 @@ void verify_lose(xbox *box, map *m)
 	}
 	if (x == i) {
 		endwin();
-		exit(0);
+		exit(1);
 	}	
 }
 
