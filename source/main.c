@@ -285,6 +285,29 @@ void reset_map(player *p, player p_save, xbox **b, xbox *box_save)
 	copy_box_list(box_save, b);
 }
 
+void verify_lose(xbox *box, map *m)
+{
+	int i = 0;
+	int x = 0;
+	
+	while (box != NULL) {
+		if (m->map[box->y - 1][box->x] == '#' && m->map[box->y][box->x + 1] == '#')
+			x = x + 1;
+		if (m->map[box->y - 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
+			x = x +	1;
+		if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x + 1] == '#')
+			x = x +	1;
+		if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
+			x = x +	1;
+		i = i + 1;
+		box = box->next;
+	}
+	if (x == i) {
+		endwin();
+		exit(0);
+	}	
+}
+	       
 int main(int argc, char *argv[])
 {
 	map *save = NULL;
@@ -312,6 +335,7 @@ int main(int argc, char *argv[])
 		if (key == 32)
 			reset_map(&p, p_save, &b, box_save);
 		verify_filled_place(b, place);
+		verify_lose(b, save);
 		refresh();
 	}
         endwin();
