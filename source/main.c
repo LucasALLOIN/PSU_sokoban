@@ -293,11 +293,11 @@ void verify_lose(xbox *box, map *m)
 	while (box != NULL) {
 		if (m->map[box->y - 1][box->x] == '#' && m->map[box->y][box->x + 1] == '#')
 			x = x + 1;
-		if (m->map[box->y - 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
+		else if (m->map[box->y - 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
 			x = x +	1;
-		if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x + 1] == '#')
+		else if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x + 1] == '#')
 			x = x +	1;
-		if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
+		else if (m->map[box->y + 1][box->x] == '#' && m->map[box->y][box->x - 1] == '#')
 			x = x +	1;
 		i = i + 1;
 		box = box->next;
@@ -311,7 +311,7 @@ void verify_lose(xbox *box, map *m)
 int main(int argc, char *argv[])
 {
 	map *save = NULL;
-	int size = get_nbr_line(argv[1]);
+	int size = 0;
 	player p;
 	player p_save;
 	xbox *b = NULL;
@@ -320,6 +320,7 @@ int main(int argc, char *argv[])
 	int key;
 
 	(void) argc;
+	size = get_nbr_line(argv[1]);
 	save = save_map(argv[1], size);
 	save = parse_map(save, &p, &b, &place);
 	copy_box_list(b, &box_save);
