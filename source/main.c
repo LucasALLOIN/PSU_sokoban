@@ -307,7 +307,42 @@ void verify_lose(xbox *box, map *m)
 		exit(0);
 	}	
 }
-	       
+
+void display_usage()
+{
+	my_putstr("USAGE\n");
+	my_putstr("     ./my_sokoban map\n");
+	my_putstr("DESCRIPTION\n");
+	my_putstr("     map file representing the warehouse map, ");
+        my_putstr("containing ‘#’ for walls,\n");
+	my_putstr("          ‘P’ for the player, ");
+	my_putstr("‘X’ for boxes and ‘O’ for storage locations.\n");
+	exit(0);
+}
+
+void verify_error(int argc, char **argv)
+{
+	int file = open(argv[1], O_RDONLY);
+
+	if (argc < 2 || file < 0)
+		exit(84);
+	if (my_strlen(argv[1]) == 2 && argv[1][0] == '-' && argv[1][1] == 'h')
+		display_usage();	
+}
+
+void verify_map(map *m)
+{
+	int x = 0;
+	int y = 0;
+
+	for (; y < m->width; y = y + 1) {
+		for (x = 0; x < m->len[y]; x = x + 1) {
+			if (m->map[y][x] != '\n' && m->map[y][x] != 'O' && m->map[y][x] != 'X' && m->map[y][x] != 'P' && m->map[y][x] != ' ' && m->map[y][x] != '#')
+				exit(84);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	map *save = NULL;
@@ -319,10 +354,11 @@ int main(int argc, char *argv[])
 	place *place = NULL;
 	int key;
 
-	(void) argc;
+	verify_error(argc, argv);
 	size = get_nbr_line(argv[1]);
 	save = save_map(argv[1], size);
 	save = parse_map(save, &p, &b, &place);
+	verify_map(save);
 	copy_box_list(b, &box_save);
 	copy_player(p, &p_save);
         initscr();
