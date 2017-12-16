@@ -85,6 +85,19 @@ void copy_box_list(xbox *from, xbox **to)
         }
 }
 
+void verify_map(map *m)
+{
+        int x = 0;
+        int y = 0;
+
+        for (; y < m->width; y = y + 1) {
+                for (x = 0; x < m->len[y]; x = x + 1) {
+                        if (m->map[y][x] != '\n' && m->map[y][x] != ' ' && m->map[y][x] != '#')
+                                exit(84);
+	        }
+        }
+}
+
 void parse_box(map *m, xbox **b, int x, int y)
 {
 	if (m->map[y][x] == 'X') {
@@ -124,6 +137,7 @@ map *parse_map(map *m, player *p, xbox **b, place **place)
 			parse_place(m, place, x, y);
 		}
 	}
+	verify_map(m);
         return (m);
 }
 
@@ -176,50 +190,62 @@ void display_map(map *map, player p, xbox *b, place *place)
 		mvprintw(b->y, b->x, "%c", 'X');
 }
 
-void move_player(map *m, player *p, int dir, xbox **b)
+void verify_col_y(map *m, player *p, xbox **b, int val)
 {
 	xbox *box = NULL;
-	
-	if (dir == KEY_UP) {
-		if (m->map[(*p).y - 1][(*p).x] != '#') {
-			if ((box = get_box_from_pos(*b, (*p).x, (*p).y - 1)) != NULL) {
-				if (m->map[(*p).y - 2][(*p).x] != '#' && get_box_from_pos(*b, (*p).x, (*p).y - 2) == NULL) {
-					box->y -= 1;
-					(*p).y = (*p).y - 1;
-				}
-			} else
-				(*p).y = (*p).y - 1;
+        int x = (val < 0) ? -1 : 1;
+
+	if ((box = get_box_from_pos(*b, (*p).x, (*p).y + val)) != NULL) {
+		if (m->map[(*p).y + val + x][(*p).x] != '#' && get_box_from_pos(*b, (*p).x, (*p).y + val + x) == NULL) {
+			box->y += val;
+			(*p).y = (*p).y + val;
 		}
-	} else if (dir == KEY_LEFT) {
-		if (m->map[(*p).y][(*p).x - 1] != '#') {
-			if ((box = get_box_from_pos(*b, (*p).x - 1, (*p).y)) != NULL) {
-				if (m->map[(*p).y][(*p).x - 2] != '#' && get_box_from_pos(*b, (*p).x - 2, (*p).y) == NULL) {
-                                        box->x -= 1;
-					(*p).x = (*p).x - 1;
-                                }
-                        } else
-				(*p).x = (*p).x - 1;
+	} else
+		(*p).y = (*p).y + val;
+}
+
+void verify_col_x(map *m, player *p, xbox **b, int val)
+{
+        xbox *box = NULL;
+        int x = (val < 0) ? -1 : 1;
+
+	if ((box = get_box_from_pos(*b, (*p).x + val, (*p).y)) != NULL) {
+		if (m->map[(*p).y][(*p).x + val + x] != '#' && get_box_from_pos(*b, (*p).x + val + x, (*p).y) == NULL) {
+			box->x += val;
+			(*p).x = (*p).x + val;
 		}
-	} else if (dir == KEY_RIGHT) {
-		if (m->map[(*p).y][(*p).x + 1] != '#') {
-                        if ((box = get_box_from_pos(*b, (*p).x + 1, (*p).y)) != NULL) {
-				if (m->map[(*p).y][(*p).x + 2] != '#' && get_box_from_pos(*b, (*p).x + 2, (*p).y) == NULL) {
-                                        box->x += 1;
-					(*p).x = (*p).x + 1;
-                                }
-                        } else
-				(*p).x = (*p).x + 1;
-		}
-	} else if (dir == KEY_DOWN) {
-		if (m->map[(*p).y + 1][(*p).x] != '#') {
-                        if ((box = get_box_from_pos(*b, (*p).x, (*p).y + 1)) != NULL) {
-				if (m->map[(*p).y + 2][(*p).x] != '#' && get_box_from_pos(*b, (*p).x, (*p).y + 2) == NULL) {
-                                        box->y += 1;
-					(*p).y = (*p).y + 1;
-                                }
-                        } else
-				(*p).y = (*p).y + 1;
-		}
+	} else
+		(*p).x = (*p).x + val;
+}
+
+void move_y(map *m, player *p, xbox **b, int val)
+{
+	if (m->map[(*p).y + val][(*p).x] != '#') {
+		verify_col_y(m, p, b, val);
+	}
+}
+
+void move_x(map *m, player *p, xbox **b, int val)
+{
+        if (m->map[(*p).y][(*p).x + val] != '#') {
+		verify_col_x(m, p, b, val);
+        }
+}
+
+void move_player(map *m, player *p, int dir, xbox **b)
+{
+	switch (dir) {
+	case KEY_UP:
+		move_y(m, p, b, -1);
+		break;
+	case KEY_DOWN:
+		move_y(m, p, b, 1);
+		break;
+	case KEY_LEFT:
+		move_x(m, p, b, -1);
+		break;
+	case KEY_RIGHT:
+		move_x(m, p, b, 1);
 	}
 }
 
@@ -258,14 +284,16 @@ void verify_filled_place(xbox *b, place *pl)
 	place *hpl = pl;
 
 	while (b != NULL) {
-		if ((pls = get_place_from_pos(pl, b->x, b->y)) != NULL && !pls->filled) {
+		if ((pls = get_place_from_pos(pl, b->x, b->y)) \
+		    != NULL && !pls->filled) {
 			pls->filled = 1;
 		}
 		b = b->next;
 	}
 	b = hb;
 	while (pl != NULL) {
-		if (get_box_from_pos(b, pl->x, pl->y) == NULL && pl->filled)
+		if (get_box_from_pos(b, pl->x, pl->y)\
+		    == NULL && pl->filled)
 			pl->filled = 0;
 		pl = pl->next;
 	}
@@ -332,23 +360,33 @@ void verify_error(int argc, char **argv)
 		exit(84);
 }
 
-void verify_map(map *m)
+void init_sokoban()
 {
-	int x = 0;
-	int y = 0;
+	initscr();
+        keypad (stdscr, TRUE);
+        noecho();
+        curs_set(0);
+}
 
-	for (; y < m->width; y = y + 1) {
-		for (x = 0; x < m->len[y]; x = x + 1) {
-			if (m->map[y][x] != '\n' && m->map[y][x] != 'O' && m->map[y][x] != 'X' && m->map[y][x] != 'P' && m->map[y][x] != ' ' && m->map[y][x] != '#')
-				exit(84);
-		}
-	}
+void prepare_launch(xbox **b, xbox **box_save, player *p, player *p_save)
+{
+	copy_box_list(*b, box_save);
+        copy_player(*p, p_save);
+        init_sokoban();
+}
+
+void prepare_map(char **argv, int argc, map **save)
+{
+	int size = 0;
+
+	verify_error(argc, argv);
+	size = get_nbr_line(argv[1]);
+        *save = save_map(argv[1], size);
 }
 
 int main(int argc, char *argv[])
 {
 	map *save = NULL;
-	int size = 0;
 	player p;
 	player p_save;
 	xbox *b = NULL;
@@ -356,17 +394,9 @@ int main(int argc, char *argv[])
 	place *place = NULL;
 	int key;
 
-	verify_error(argc, argv);
-	size = get_nbr_line(argv[1]);
-	save = save_map(argv[1], size);
+	prepare_map(argv, argc, &save);
 	save = parse_map(save, &p, &b, &place);
-	verify_map(save);
-	copy_box_list(b, &box_save);
-	copy_player(p, &p_save);
-        initscr();
-	keypad (stdscr, TRUE);
-	noecho();
-	curs_set(0);
+	prepare_launch(&b, &box_save, &p, &p_save);
 	while (1) {
 		display_map(save, p, b, place);
 		key = getch();
@@ -377,6 +407,5 @@ int main(int argc, char *argv[])
 		verify_lose(b, save);
 		refresh();
 	}
-        endwin();
 	return (0);
 }
