@@ -35,6 +35,7 @@ typedef struct s_place {
 } place;
 
 int get_nbr_line(char *file);
+void verify_box_stucks(xbox *box, map *m, int *x);
 void parse_player(map *m, player *p, int x, int y);
 xbox *get_box_from_pos(xbox *head, int x, int y);
 place *get_place_from_pos(place *head, int x, int y);
@@ -62,7 +63,6 @@ void verify_win(place *pl, map *save, xbox *b);
 void verify_filled_place(xbox *b, place *pl, map *save);
 void copy_player(player from, player *to);
 void reset_map(player *p, player p_save, xbox **b, xbox *box_save);
-void display_usage(void);
 void verify_error(int argc, char **argv);
 void init_sokoban(void);
 void prepare_launch(xbox **b, xbox **box_save, player *p, player *p_save);

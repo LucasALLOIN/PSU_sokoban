@@ -5,7 +5,14 @@
 ## Build my_sokoban binary.
 ##
 
-SRC	=	source/main.c
+SRC	=	source/main.c \
+		source/map_utils.c \
+		source/map_parser.c \
+		source/box_manag.c \
+		source/place_manag.c \
+		source/player.c \
+		source/player_move.c \
+		source/win_loose.c
 
 OBJ	=	$(SRC:.c=.o)
 
