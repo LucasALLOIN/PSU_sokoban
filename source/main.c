@@ -324,10 +324,12 @@ void verify_error(int argc, char **argv)
 {
 	int file = open(argv[1], O_RDONLY);
 
-	if (argc < 2 || file < 0)
+	if (argc < 2)
 		exit(84);
 	if (my_strlen(argv[1]) == 2 && argv[1][0] == '-' && argv[1][1] == 'h')
-		display_usage();	
+		display_usage();
+	if (file < 0)
+		exit(84);
 }
 
 void verify_map(map *m)
