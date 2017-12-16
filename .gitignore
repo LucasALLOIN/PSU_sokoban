@@ -10,5 +10,4 @@
 *.gcno
 units
 my_sokoban
-map*
 map_editor/
