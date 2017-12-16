@@ -144,6 +144,14 @@ map *parse_map(map *m, player *p, xbox **b, place **place)
 	return (m);
 }
 
+void player_pos(char c, player *p, int x, int y)
+{
+	if (c == 'P') {
+		p->x = x;
+		p->y = y;
+	}
+}
+
 player get_player_pos(map *map)
 {
 	int x = 0;
@@ -152,8 +160,7 @@ player get_player_pos(map *map)
 
 	for (; y < map->width; y = y + 1) {
 		for (x = 0; x < map->len[y]; x = x + 1) {
-			res.x = (map->map[y][x] == 'P') ? x : res.x;
-			res.y = (map->map[y][x] == 'P') ? y : res.y;
+			player_pos(map->map[y][x], &res, y, x);
 		}
 	}
 	return (res);
